@@ -45,6 +45,8 @@ async function getJiraTicketsFromCommits() {
     until: latestCommit.data.commit.committer.date,
   })
 
+  console.log('Fetched commits:', JSON.stringify(commits.data, null, 2))
+
   const jiraTickets = commits.data
     .map((c) => {
       const regexMatches = jiraTicketRegex.exec(c.commit.message) || []
@@ -52,6 +54,8 @@ async function getJiraTicketsFromCommits() {
       return regexMatches[1]
     })
     .filter((el) => el)
+
+  console.log('Found Jira tickets:', Array.from(new Set(jiraTickets)))
 
   return Array.from(new Set(jiraTickets)) // use Set to eliminate duplicate entries
 }
