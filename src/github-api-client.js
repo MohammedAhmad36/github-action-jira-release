@@ -7,6 +7,9 @@ import { context, getOctokit } from '@actions/github'
 import * as core from '@actions/core'
 
 const defaultApiParams = { owner: context.repo.owner, repo: context.repo.repo }
+
+console.info("Project key = " + core.getInput('project_key'))
+
 const jiraTicketRegex = new RegExp(
   `^.*(${core.getInput('project_key')}-\\d+).*`,
   'i'
@@ -45,7 +48,7 @@ async function getJiraTicketsFromCommits() {
     until: latestCommit.data.commit.committer.date,
   })
 
-  console.log('Fetched commits:', JSON.stringify(commits.data, null, 2))
+  console.info('Fetched commits:', JSON.stringify(commits.data, null, 2))
 
   const jiraTickets = commits.data
     .map((c) => {
@@ -55,7 +58,7 @@ async function getJiraTicketsFromCommits() {
     })
     .filter((el) => el)
 
-  console.log('Found Jira tickets:', Array.from(new Set(jiraTickets)))
+  console.info('Found Jira tickets:', Array.from(new Set(jiraTickets)))
 
   return Array.from(new Set(jiraTickets)) // use Set to eliminate duplicate entries
 }
