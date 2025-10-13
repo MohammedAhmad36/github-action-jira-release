@@ -43,7 +43,7 @@ async function setFixVersion(jiraVersion) {
   return getJiraTicketsFromCommits()
     .then((t) => updateJiraTickets(t, jiraVersion))
     .catch((e) => console.error(e))
-    .then(() => console.info('Done!'))
+    .then(() => console.info('Not Done!'))
 }
 
 export default setFixVersion
