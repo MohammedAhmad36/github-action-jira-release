@@ -10,6 +10,8 @@ import jiraClient from './jira-client'
 async function updateJiraTickets(tickets, jiraVersion) {
   const promises = tickets.map(async (t) => {
     try {
+      console.info('Tickets are: ' + t + ' and jira version is: ' + jiraVersion)
+
       const response = await jiraClient
         .put(`rest/api/3/issue/${t}`, {
           json: {
@@ -28,7 +30,7 @@ async function updateJiraTickets(tickets, jiraVersion) {
     } catch (error) {
       console.error(
         `Failed to update issue ${t}:`,
-        error.response?.body || error
+        error.response?.body || error,
       )
       throw error
     }
