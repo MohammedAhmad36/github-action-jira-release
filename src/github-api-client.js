@@ -8,7 +8,6 @@ import * as core from '@actions/core'
 
 const defaultApiParams = { owner: context.repo.owner, repo: context.repo.repo }
 
-console.info("Project key = " + core.getInput('project_key'))
 
 const jiraTicketRegex = new RegExp(
   `^.*(${core.getInput('project_key')}-\\d+).*`,
@@ -20,6 +19,8 @@ if (!token) throw new Error('GITHUB_TOKEN is not set')
 const github = getOctokit(token)
 
 async function getJiraTicketsFromCommits() {
+  console.info("Project key = " + core.getInput('project_key'))
+
   const { data: tags } = await github.rest.repos.listTags({
     ...defaultApiParams,
     per_page: 2,
@@ -48,10 +49,11 @@ async function getJiraTicketsFromCommits() {
     until: latestCommit.data.commit.committer.date,
   })
 
-  console.info('Fetched commits:', JSON.stringify(commits.data, null, 2))
 
   const jiraTickets = commits.data
     .map((c) => {
+       console.info('Fetched commits:', JSON.stringify(c.commit.message, null, 2))
+
       const regexMatches = jiraTicketRegex.exec(c.commit.message) || []
 
       return regexMatches[1]
