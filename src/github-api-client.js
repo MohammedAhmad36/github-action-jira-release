@@ -19,7 +19,9 @@ if (!token) throw new Error('GITHUB_TOKEN is not set')
 const github = getOctokit(token)
 
 async function getJiraTicketsFromCommits() {
-  console.info("Project key = " + core.getInput('project_key'))
+  core.info("Action start: Fetching Jira tickets from commits")
+
+  core.info("Project key = " + core.getInput('project_key'))
 
   const { data: tags } = await github.rest.repos.listTags({
     ...defaultApiParams,
@@ -52,7 +54,7 @@ async function getJiraTicketsFromCommits() {
 
   const jiraTickets = commits.data
     .map((c) => {
-       console.info('Fetched commits:', JSON.stringify(c.commit.message, null, 2))
+       core.info('Fetched commits:', JSON.stringify(c.commit.message, null, 2))
 
       const regexMatches = jiraTicketRegex.exec(c.commit.message) || []
 
@@ -60,7 +62,7 @@ async function getJiraTicketsFromCommits() {
     })
     .filter((el) => el)
 
-  console.info('Found Jira tickets:', Array.from(new Set(jiraTickets)))
+  core.info('Found Jira tickets:', Array.from(new Set(jiraTickets)))
 
   return Array.from(new Set(jiraTickets)) // use Set to eliminate duplicate entries
 }
