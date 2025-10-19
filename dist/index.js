@@ -31248,8 +31248,10 @@ var coreExports = requireCore();
 
 
 const defaultApiParams = { owner: githubExports.context.repo.owner, repo: githubExports.context.repo.repo };
+
+
 const jiraTicketRegex = new RegExp(
-  `^(${coreExports.getInput('project_key')}-\\d+):?\\s?.+`,
+  `^.*(${coreExports.getInput('project_key')}-\\d+).*`,
   'i'
 );
 
@@ -31258,6 +31260,10 @@ if (!token) throw new Error('GITHUB_TOKEN is not set')
 const github = githubExports.getOctokit(token);
 
 async function getJiraTicketsFromCommits() {
+  coreExports.info("Action start: Fetching Jira tickets from commits");
+
+  coreExports.info("Project key = " + coreExports.getInput('project_key'));
+
   const { data: tags } = await github.rest.repos.listTags({
     ...defaultApiParams,
     per_page: 2,
@@ -31286,13 +31292,18 @@ async function getJiraTicketsFromCommits() {
     until: latestCommit.data.commit.committer.date,
   });
 
+
   const jiraTickets = commits.data
     .map((c) => {
+       coreExports.info('Fetched commits:', JSON.stringify(c.commit.message, null, 2));
+
       const regexMatches = jiraTicketRegex.exec(c.commit.message) || [];
 
       return regexMatches[1]
     })
     .filter((el) => el);
+
+  coreExports.info('Found Jira tickets:', Array.from(new Set(jiraTickets)));
 
   return Array.from(new Set(jiraTickets)) // use Set to eliminate duplicate entries
 }
@@ -42012,6 +42023,8 @@ const jiraClient = got.extend({
 async function updateJiraTickets(tickets, jiraVersion) {
   const promises = tickets.map(async (t) => {
     try {
+      console.info('Tickets are: ' + t + ' and jira version is: ' + jiraVersion);
+
       const response = await jiraClient
         .put(`rest/api/3/issue/${t}`, {
           json: {
@@ -42030,7 +42043,7 @@ async function updateJiraTickets(tickets, jiraVersion) {
     } catch (error) {
       console.error(
         `Failed to update issue ${t}:`,
-        error.response?.body || error
+        error.response?.body || error,
       );
       throw error
     }
@@ -42043,7 +42056,7 @@ async function setFixVersion(jiraVersion) {
   return getJiraTicketsFromCommits()
     .then((t) => updateJiraTickets(t, jiraVersion))
     .catch((e) => console.error(e))
-    .then(() => console.info('Done!'))
+    .then(() => console.info('Not Done!'))
 }
 
 async function run() {
